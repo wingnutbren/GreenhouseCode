@@ -2,15 +2,18 @@
     "therm_details": [
         {
             "therm_name" : "TubeExit",
-            "path_to_file" : "/sys/bus/w1/devices/28-0316026293ff/w1_slave" 
+            "path_to_file" : "/sys/bus/w1/devices/28-0316026293ff/w1_slave",
+            "monitor_me" : "no" 
         },
         {
             "therm_name" : "Outdoor",
-            "path_to_file" : "/sys/bus/w1/devices/28-03160020eaff/w1_slave" 
+            "path_to_file" : "/sys/bus/w1/devices/28-03160020eaff/w1_slave",
+            "monitor_me" : "no" 
         },
         {
             "therm_name" : "Indoor",
-            "path_to_file" : "/sys/bus/w1/devices/28-0316026f3cff/w1_slave" 
+            "path_to_file" : "/sys/bus/w1/devices/28-0316026f3cff/w1_slave",
+            "monitor_me" : "yes" 
         }
 
     ]
