@@ -3,18 +3,21 @@
         {
             "therm_name" : "TubeExit",
             "path_to_file" : "/sys/bus/w1/devices/28-0316026293ff/w1_slave",
-            "monitor_me" : "no" 
+            "monitor_me" : "False" 
         },
         {
             "therm_name" : "Outdoor",
             "path_to_file" : "/sys/bus/w1/devices/28-03160020eaff/w1_slave",
-            "monitor_me" : "no" 
+            "monitor_me" : "False" 
         },
         {
             "therm_name" : "Indoor",
             "path_to_file" : "/sys/bus/w1/devices/28-0316026f3cff/w1_slave",
-            "monitor_me" : "yes" 
+            "monitor_me" : "True",
+            "temp_max" : 75,
+            "temp_min" : 70
         }
 
-    ]
+    ],
+    "check_freq_seconds": 4
 }
