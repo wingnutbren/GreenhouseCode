@@ -4,7 +4,7 @@ from collections import namedtuple
 import RPi.GPIO as GPIO
 import signal
 import sys
-from datetime import datetime
+import datetime
 from os.path import exists
 
 #Declare Functions
@@ -48,9 +48,11 @@ def alter_fan_state(data):
     if(data['fan_state_word']=='on'):
         data['fan_state_num']=data['fan_state_on_val']
         GPIO.output(18,GPIO.HIGH)
+        GPIO.output(23,GPIO.HIGH)
     else:
         data['fan_state_num']=0
         GPIO.output(18,GPIO.LOW)
+        GPIO.output(23,GPIO.LOW)
     return(data['fan_state_word'])   
 
 #Process the Ctrl_C keystroke from shell
@@ -58,11 +60,25 @@ def alter_fan_state(data):
 def sigint_handler(signal, frame):
     print('\n\nScript Interrupted by signal, Turning off fans and exiting')
     GPIO.output(18,GPIO.LOW)
+    GPIO.output(23,GPIO.LOW)
     sys.exit(0)
 	
+#See if it's time to write to the file
+def write_output_if_necessary(data):
+    global nextWriteTime
+    if not (data['record_csv'].lower()=='true'):
+        return None  #Don't even check if the JSON config says False
+
+    now = datetime.datetime.now()
+    if(now > nextWriteTime):
+        write_output(data)
+        #update timestamp
+        delta = datetime.timedelta(seconds=data['record_csv_interval_seconds'])
+        nextWriteTime = now+delta
+
 #Write the current state to daily file
 def write_output(data):
-    now = datetime.now()
+    now = datetime.datetime.now()
     current_time = now.strftime("%H:%M:%S")
     outfilename = now.strftime("%m-%d-%Y.csv")
     outstring=""
@@ -85,26 +101,35 @@ def write_output(data):
 
 ####################     main    ####################
 print("Launching Thermostat Control . . .\n")
-#Say what to do when someone presses Ctrl+C
-signal.signal(signal.SIGINT,sigint_handler)
+try:
+    #Say what to do when someone presses Ctrl+C
+    signal.signal(signal.SIGINT,sigint_handler)
 
-#Initialize GPIO Pins for fan control
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(18,GPIO.OUT)
+    #Initialize GPIO Pins for fan control
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(18,GPIO.OUT)
+    GPIO.setup(23,GPIO.OUT)
 
-#Open File to read configurations
-thermFile=open('Therms.json')
-#get a dictionary based on file
-data = json.load(thermFile)
-#close the file
-thermFile.close 
+    #Open File to read configurations
+    thermFile=open('Therms.json')
+    #get a dictionary based on file
+    data = json.load(thermFile)
+    #close the file
+    thermFile.close 
+    nextWriteTime=datetime.datetime.now();
+    #print ("initialized nextwritetime",nextWriteTime)
 
-#Main loop: read temperatures, set fans on/off, record data to CSV
-while(1):
-    refresh_thermometers(data['therm_details'])
-    fanstate = alter_fan_state(data)
-    
-    print("fan is now "+fanstate)
-    write_output(data)
-    time.sleep(float(data['check_freq_seconds']))
+    #Main loop: read temperatures, set fans on/off, record data to CSV
+    while(1):
+        refresh_thermometers(data['therm_details'])
+        fanstate = alter_fan_state(data)
+        
+        print("fan is now "+fanstate)
+        
+        write_output_if_necessary(data)
+        time.sleep(float(data['check_freq_seconds']))
+finally:
+    print ("\n\n\n--------------Powering Down GPIO 18,23")
+    GPIO.output(18,GPIO.LOW)
+    GPIO.output(23,GPIO.LOW)

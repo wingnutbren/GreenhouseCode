@@ -19,6 +19,8 @@
         }
 
     ],
-    "check_freq_seconds": 297,
-    "fan_state_on_val":50
+    "check_freq_seconds": 10,
+    "fan_state_on_val":50,
+    "record_csv":"True",
+    "record_csv_interval_seconds":297
 }
