@@ -19,5 +19,6 @@
         }
 
     ],
-    "check_freq_seconds": 4
+    "check_freq_seconds": 297,
+    "fan_state_on_val":50
 }

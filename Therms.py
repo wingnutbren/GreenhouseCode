@@ -4,6 +4,8 @@ from collections import namedtuple
 import RPi.GPIO as GPIO
 import signal
 import sys
+from datetime import datetime
+from os.path import exists
 
 #Declare Functions
 
@@ -38,16 +40,18 @@ def alter_fan_state(data):
     for thermometer in data['therm_details']:
         if (thermometer['monitor_me'].lower()=="true" ):
             print('Monitoring '+thermometer['therm_name'])
-            state='off'
+            data['fan_state_word']='off'
             if(thermometer['therm_temp']>thermometer['temp_max']):
-                    state='on'
+                    data['fan_state_word']='on'
             if(thermometer['therm_temp']<thermometer['temp_min']):
-                    state='on'
-    if(state=='on'):
+                    data['fan_state_word']='on'
+    if(data['fan_state_word']=='on'):
+        data['fan_state_num']=data['fan_state_on_val']
         GPIO.output(18,GPIO.HIGH)
     else:
+        data['fan_state_num']=0
         GPIO.output(18,GPIO.LOW)
-    return(state)   
+    return(data['fan_state_word'])   
 
 #Process the Ctrl_C keystroke from shell
 #This handler will be registered in the Main below
@@ -56,6 +60,29 @@ def sigint_handler(signal, frame):
     GPIO.output(18,GPIO.LOW)
     sys.exit(0)
 	
+#Write the current state to daily file
+def write_output(data):
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    outfilename = now.strftime("%m-%d-%Y.csv")
+    outstring=""
+    if (not exists(outfilename)): #if the file is new,put the header row
+        outstring += "time"
+        for thermometer in data['therm_details']:
+            outstring +=","
+            outstring +=thermometer['therm_name']
+        outstring += ",FanStateNum,FanStateWord\n"
+    outstring+=current_time
+    for thermometer in data['therm_details']:
+        outstring+=","
+        #outstring+=str(thermometer['therm_temp'])
+        outstring+="{:.1f}".format(thermometer['therm_temp'])
+    outstring+=","+str(data['fan_state_num'])+","+data['fan_state_word']
+    print(outstring) 
+    f = open(outfilename,"a")
+    f.write(outstring+"\n");
+    f.close()
+
 ####################     main    ####################
 print("Launching Thermostat Control . . .\n")
 #Say what to do when someone presses Ctrl+C
@@ -77,5 +104,7 @@ thermFile.close
 while(1):
     refresh_thermometers(data['therm_details'])
     fanstate = alter_fan_state(data)
+    
     print("fan is now "+fanstate)
+    write_output(data)
     time.sleep(float(data['check_freq_seconds']))
