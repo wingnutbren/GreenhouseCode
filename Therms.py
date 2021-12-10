@@ -6,9 +6,9 @@ import signal
 import sys
 import datetime
 from os.path import exists
+import os
 
-#Declare Functions
-
+#Declare Functions 
 #Access the thermometer dictionary and read the 'files' associated with each one to 
 #determine the current temperature.  return the temperature in fahrenheit
 def read_temp_fahrenheit(thermometer):
@@ -99,9 +99,40 @@ def write_output(data):
     f.write(outstring+"\n");
     f.close()
 
+def abort_if_another_running():
+    mypid = os.getpid()
+    plist = []
+    for line in os.popen("ps ax | grep python | grep "+__file__+" |grep -v grep | grep -v "+str(mypid) ):
+        plist.append(line)
+    
+    if len(plist):
+        print("abdicating.\n"+str(plist))
+        sys.exit(1)
+
+#Cause LED on pin 18 to blink on and off, then return to initial state
+def blink18():
+    state=GPIO.input(18)
+    print state
+    GPIO.output(18,GPIO.HIGH)
+    time.sleep(.25)
+    GPIO.output(18,GPIO.LOW)
+    time.sleep(.25)
+    GPIO.output(18,GPIO.HIGH)
+    time.sleep(.25)
+    GPIO.output(18,GPIO.LOW)
+    time.sleep(.25)
+    if state:
+        GPIO.output(18, GPIO.HIGH)
+
+    
+
 ####################     main    ####################
 print("Launching Thermostat Control . . .\n")
+#abdicate if another process of the same name is already 
+abort_if_another_running()
+
 try:
+
     #Say what to do when someone presses Ctrl+C
     signal.signal(signal.SIGINT,sigint_handler)
 
@@ -129,6 +160,7 @@ try:
         
         write_output_if_necessary(data)
         time.sleep(float(data['check_freq_seconds']))
+        blink18()
 finally:
     print ("\n\n\n--------------Powering Down GPIO 18,23")
     GPIO.output(18,GPIO.LOW)
