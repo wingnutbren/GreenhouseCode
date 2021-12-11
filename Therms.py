@@ -103,7 +103,7 @@ def write_output(data):
 def abort_if_another_running():
     mypid = os.getpid()
     plist = []
-    for line in os.popen("ps ax | grep python | grep "+__file__+" |grep -v grep | grep -v "+str(mypid) ):
+    for line in os.popen("ps ax | grep python | grep "+__file__+" |grep -v grep | grep -v /bin/sh |grep -v "+str(mypid) ):
         plist.append(line)
     
     if len(plist):
@@ -130,12 +130,14 @@ def blink18():
 ####################     main    ####################
 print("Launching Thermostat Control . . .\n")
 #abdicate if another process of the same name is already 
+
 abort_if_another_running()
 
 try:
 
     #Say what to do when someone presses Ctrl+C
     signal.signal(signal.SIGINT,sigint_handler)
+    signal.signal(signal.SIGTERM,sigint_handler)
 
     #Initialize GPIO Pins for fan control
     GPIO.setmode(GPIO.BCM)
@@ -150,7 +152,6 @@ try:
     #close the file
     thermFile.close 
     nextWriteTime=datetime.datetime.now();
-    #print ("initialized nextwritetime",nextWriteTime)
 
     #Main loop: read temperatures, set fans on/off, record data to CSV
     while(1):
