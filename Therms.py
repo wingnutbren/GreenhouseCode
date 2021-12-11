@@ -108,6 +108,7 @@ def abort_if_another_running():
     
     if len(plist):
         print("abdicating.\n"+str(plist))
+        time.sleep(2)
         sys.exit(1)
 
 #Cause LED on pin 18 to blink on and off, then return to initial state
@@ -149,6 +150,8 @@ try:
     thermFile=open('Therms.json')
     #get a dictionary based on file
     data = json.load(thermFile)
+    data['fan_state_word'] = "off"
+    data['fan_state'] = 0
     #close the file
     thermFile.close 
     nextWriteTime=datetime.datetime.now();
