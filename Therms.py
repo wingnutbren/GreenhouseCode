@@ -29,7 +29,7 @@ def refresh_thermometers(therms):
     #iterate through Thermometers
     for thermometer in therms:
         thermometer['therm_temp'] = read_temp_fahrenheit(thermometer)
-        print(thermometer['therm_name']+": "+str(thermometer['therm_temp'])+"\n")
+        log_output(thermometer['therm_name']+": "+str(thermometer['therm_temp'])+"\n")
 
 # Iterate through each thermometer and, if the thermometer is being monitored,
 # check its current temp against the allowable temps.
@@ -40,7 +40,7 @@ def alter_fan_state(data):
     #iterate through Thermometers
     for thermometer in data['therm_details']:
         if (thermometer['monitor_me'].lower()=="true" ):
-            print('Monitoring '+thermometer['therm_name'])
+            log_output('Monitoring '+thermometer['therm_name'])
             data['fan_state_word']='off'
             if(thermometer['therm_temp']>thermometer['temp_max']):
                     data['fan_state_word']='on'
@@ -59,7 +59,7 @@ def alter_fan_state(data):
 #Process the Ctrl_C keystroke from shell
 #This handler will be registered in the Main below
 def sigint_handler(signal, frame):
-    print('\n\nScript Interrupted by signal, Turning off fans and exiting')
+    log_output('\n\nScript Interrupted by signal, Turning off fans and exiting')
     GPIO.output(18,GPIO.LOW)
     GPIO.output(23,GPIO.LOW)
     sys.exit(0)
@@ -77,6 +77,13 @@ def write_output_if_necessary(data):
         delta = datetime.timedelta(seconds=data['record_csv_interval_seconds'])
         nextWriteTime = now+delta
 
+def log_output(text):
+        time =datetime.datetime.now().strftime("%H:%M:%S")
+        date =datetime.datetime.now().strftime("%m-%d-%Y")
+        f= open("Therms"+date+".log","a")
+        f.write(time+" "+text+"\n")
+        f.close()
+    
 #Write the current state to daily file
 def write_output(data):
     now = datetime.datetime.now()
@@ -95,7 +102,6 @@ def write_output(data):
         #outstring+=str(thermometer['therm_temp'])
         outstring+="{:.1f}".format(thermometer['therm_temp'])
     outstring+=","+str(data['fan_state_num'])+","+data['fan_state_word']
-    print(outstring) 
     f = open(outfilename,"a")
     f.write(outstring+"\n");
     f.close()
@@ -107,14 +113,13 @@ def abort_if_another_running():
         plist.append(line)
     
     if len(plist):
-        print("abdicating.\n"+str(plist))
+        log_output("abdicating.\n"+str(plist))
         time.sleep(2)
         sys.exit(1)
 
 #Cause LED on pin 18 to blink on and off, then return to initial state
 def blink18():
     state=GPIO.input(18)
-    print state
     GPIO.output(18,GPIO.HIGH)
     time.sleep(.25)
     GPIO.output(18,GPIO.LOW)
@@ -129,7 +134,7 @@ def blink18():
     
 
 ####################     main    ####################
-print("Launching Thermostat Control . . .\n")
+log_output("Launching Thermostat Control . . .")
 #abdicate if another process of the same name is already 
 
 abort_if_another_running()
@@ -161,12 +166,12 @@ try:
         refresh_thermometers(data['therm_details'])
         fanstate = alter_fan_state(data)
         
-        print("fan is now "+fanstate)
+        log_output("fan is now "+fanstate)
         
         write_output_if_necessary(data)
         time.sleep(float(data['check_freq_seconds']))
         blink18()
 finally:
-    print ("\n\n\n--------------Powering Down GPIO 18,23")
+    log_output ("\n\n\n--------------Powering Down GPIO 18,23")
     GPIO.output(18,GPIO.LOW)
     GPIO.output(23,GPIO.LOW)
