@@ -12,16 +12,17 @@ import os
 #Access the thermometer dictionary and read the 'files' associated with each one to 
 #determine the current temperature.  return the temperature in fahrenheit
 def read_temp_fahrenheit(thermometer):
-	therm_file = open(thermometer['path_to_file'],"r")
-	contents = therm_file.read()
-	#the contents of the thermostat file will look something like this:
-	# e7 00 4b 46 7f ff 0c 10 6b : crc=6b YES
-	# e7 00 4b 46 7f ff 0c 10 6b t=14437
-
-	therm_file.close
-	temp = int(contents.split("t=")[1])/1000.0
-	temp = temp*1.8+32 #convert to Fahrenheit
-	return(temp)
+    if (not exists (thermometer['path_to_file']) ):
+            return 1.2345 #can't read the file, say it's zero
+    therm_file = open(thermometer['path_to_file'],"r")
+    contents = therm_file.read()
+    #the contents of the thermostat file will look something like this:
+    # e7 00 4b 46 7f ff 0c 10 6b : crc=6b YES
+    # e7 00 4b 46 7f ff 0c 10 6b t=14437
+    therm_file.close
+    temp = int(contents.split("t=")[1])/1000.0
+    temp = temp*1.8+32 #convert to Fahrenheit
+    return(temp)
 
 # Iterate through each thermometer and update its current temperature
 def refresh_thermometers(therms):
