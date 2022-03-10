@@ -1,7 +1,7 @@
 {
     "therm_details": [
         {
-            "therm_name" : "TubeExit",
+            "therm_name" : "SoilTemp",
             "path_to_file" : "/sys/bus/w1/devices/28-0316026293ff/w1_slave",
             "monitor_me" : "False" 
         },
@@ -14,13 +14,14 @@
             "therm_name" : "Indoor",
             "path_to_file" : "/sys/bus/w1/devices/28-0316026f3cff/w1_slave",
             "monitor_me" : "True",
-            "temp_max" : 75,
-            "temp_min" : 70
+            "temp_max" : 80,
+            "temp_min" : 45
         }
 
     ],
     "check_freq_seconds": 10,
     "fan_state_on_val":50,
     "record_csv":"True",
-    "record_csv_interval_seconds":297
+    "record_csv_interval_seconds":297,
+    "log_file":"Therms.log"
 }
