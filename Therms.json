@@ -23,5 +23,5 @@
     "fan_state_on_val":50,
     "record_csv":"True",
     "record_csv_interval_seconds":297,
-    "log_file":"Therms.log"
+    "log_dir":"~/GreenHouseLogs"
 }

@@ -78,11 +78,11 @@ def write_output_if_necessary(data):
         nextWriteTime = now+delta
 
 def log_output(text):
-        time =datetime.datetime.now().strftime("%H:%M:%S")
-        date =datetime.datetime.now().strftime("%m-%d-%Y")
-        f= open("Therms"+date+".log","a")
-        f.write(time+" "+text+"\n")
-        f.close()
+    time =datetime.datetime.now().strftime("%H:%M:%S")
+    date =datetime.datetime.now().strftime("%m-%d-%Y")
+    f= open(os.path.expanduser(data['log_dir']+"/Therms"+date+".log"),"a")
+    f.write(time+" "+text+"\n")
+    f.close()
     
 #Write the current state to daily file
 def write_output(data):
@@ -90,6 +90,8 @@ def write_output(data):
     current_time = now.strftime("%H:%M:%S")
     outfilename = now.strftime("%m-%d-%Y.csv")
     outstring=""
+    outfilename = os.path.expanduser(data['log_dir']+"/"+outfilename)
+    print(outfilename)
     if (not exists(outfilename)): #if the file is new,put the header row
         outstring += "time"
         for thermometer in data['therm_details']:
@@ -134,7 +136,6 @@ def blink18():
     
 
 ####################     main    ####################
-log_output("Launching Thermostat Control . . .")
 #abdicate if another process of the same name is already 
 
 abort_if_another_running()
@@ -160,6 +161,7 @@ try:
     #close the file
     thermFile.close 
     nextWriteTime=datetime.datetime.now();
+    log_output("Launching Thermostat Control . . .")
 
     #Main loop: read temperatures, set fans on/off, record data to CSV
     while(1):
