@@ -1,0 +1,3 @@
+configure which pins go to which fans
+configure which fans go to which thermometers
+write .csv file
