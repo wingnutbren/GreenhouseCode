@@ -64,15 +64,15 @@ def sigint_handler(signal, frame):
     GPIO.output(23,GPIO.LOW)
     sys.exit(0)
 	
-#See if it's time to write to the file
-def write_output_if_necessary(data):
+#See if it's time to write to the CSV file
+def write_csv_if_necessary(data):
     global nextWriteTime
     if not (data['record_csv'].lower()=='true'):
         return None  #Don't even check if the JSON config says False
 
     now = datetime.datetime.now()
     if(now > nextWriteTime):
-        write_output(data)
+        write_csv(data)
         #update timestamp
         delta = datetime.timedelta(seconds=data['record_csv_interval_seconds'])
         nextWriteTime = now+delta
@@ -85,13 +85,12 @@ def log_output(text):
     f.close()
     
 #Write the current state to daily file
-def write_output(data):
+def write_csv(data):
     now = datetime.datetime.now()
     current_time = now.strftime("%H:%M:%S")
     outfilename = now.strftime("%m-%d-%Y.csv")
     outstring=""
     outfilename = os.path.expanduser(data['log_dir']+"/"+outfilename)
-    print(outfilename)
     if (not exists(outfilename)): #if the file is new,put the header row
         outstring += "time"
         for thermometer in data['therm_details']:
@@ -170,7 +169,7 @@ try:
         
         log_output("fan is now "+fanstate)
         
-        write_output_if_necessary(data)
+        write_csv_if_necessary(data)
         time.sleep(float(data['check_freq_seconds']))
         blink18()
 finally:
