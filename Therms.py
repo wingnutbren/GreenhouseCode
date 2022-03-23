@@ -7,6 +7,7 @@ import sys
 import datetime
 from os.path import exists
 import os
+import sqlite3
 
 #Declare Functions 
 #Access the thermometer dictionary and read the 'files' associated with each one to 
@@ -64,18 +65,32 @@ def sigint_handler(signal, frame):
     GPIO.output(23,GPIO.LOW)
     sys.exit(0)
 	
+
 #See if it's time to write to the CSV file
 def write_csv_if_necessary(data):
-    global nextWriteTime
+    global nextCsvWriteTime
     if not (data['record_csv'].lower()=='true'):
         return None  #Don't even check if the JSON config says False
 
     now = datetime.datetime.now()
-    if(now > nextWriteTime):
+    if(now > nextCsvWriteTime):
         write_csv(data)
         #update timestamp
         delta = datetime.timedelta(seconds=data['record_csv_interval_seconds'])
-        nextWriteTime = now+delta
+        nextCsvWriteTime = now+delta
+
+#See if it's time to write to the CSV file
+def write_db_if_necessary(data):
+    global nextDbWriteTime
+    if not (data['record_db'].lower()=='true'):
+        return None  #Don't even check if the JSON config says False
+
+    now = datetime.datetime.now()
+    if(now > nextDbWriteTime):
+        write_db(data)
+        #update timestamp
+        delta = datetime.timedelta(seconds=data['record_db_interval_seconds'])
+        nextDbWriteTime = now+delta
 
 def log_output(text):
     time =datetime.datetime.now().strftime("%H:%M:%S")
@@ -106,6 +121,13 @@ def write_csv(data):
     f = open(outfilename,"a")
     f.write(outstring+"\n");
     f.close()
+    
+def write_db(data):
+    now = datetime.datetime.now()
+    for thermometer in data['therm_details']:
+        connection.execute ("INSERT INTO temps (therm_name,datetime,ftemp) VALUES (?,?,?)",
+                (thermometer['therm_name'],now,thermometer['therm_temp']))
+    connection.commit();
 
 def abort_if_another_running():
     mypid = os.getpid()
@@ -131,6 +153,18 @@ def blink18():
     time.sleep(.25)
     if state:
         GPIO.output(18, GPIO.HIGH)
+
+def initialize_db_if_necessary():
+    global connection
+    if (data['record_db'].lower()=='true'):
+        db_path = os.path.expanduser(data['log_dir']+'hotel_data.db')
+        log_output('initializing db:'+db_path);
+        connection = sqlite3.connect(os.path.expanduser(data['log_dir']+'/Greenhouse_data.db'))
+        connection.execute('''CREATE TABLE if not exists temps
+                           (therm_name text not null,
+                           datetime int NOT NULL,
+                           ftemp number NOT NULL);
+                           ''')
 
     
 
@@ -159,8 +193,10 @@ try:
     data['fan_state'] = 0
     #close the file
     thermFile.close 
-    nextWriteTime=datetime.datetime.now();
+    nextCsvWriteTime=datetime.datetime.now();
+    nextDbWriteTime=datetime.datetime.now();
     log_output("Launching Thermostat Control . . .")
+    initialize_db_if_necessary();
 
     #Main loop: read temperatures, set fans on/off, record data to CSV
     while(1):
@@ -170,6 +206,7 @@ try:
         log_output("fan is now "+fanstate)
         
         write_csv_if_necessary(data)
+        write_db_if_necessary(data)
         time.sleep(float(data['check_freq_seconds']))
         blink18()
 finally:

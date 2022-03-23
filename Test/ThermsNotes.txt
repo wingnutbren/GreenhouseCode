@@ -1,3 +1,21 @@
 configure which pins go to which fans
 configure which fans go to which thermometers
 write .csv file
+
+import sqlite3
+if 'record_Db' then initialize db
+  initialize db: create table if doesn't exist
+def record_Db
+  iterate therms
+   store datetime
+   insert datetime,thermname,temp
+
+
+start webserver
+   serve index page
+start cgi-bin
+   serve helloworld + time
+write python plaintext output from database
+
+
+
