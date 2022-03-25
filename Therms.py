@@ -91,6 +91,7 @@ def write_db_if_necessary(data):
         #update timestamp
         delta = datetime.timedelta(seconds=data['record_db_interval_seconds'])
         nextDbWriteTime = now+delta
+        print('nextDbWriteTime: ',nextDbWriteTime)
 
 def log_output(text):
     time =datetime.datetime.now().strftime("%H:%M:%S")

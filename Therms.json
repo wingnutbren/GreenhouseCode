@@ -19,11 +19,11 @@
         }
 
     ],
-    "check_freq_seconds": 10,
+    "check_freq_seconds": 30,
     "fan_state_on_val":50,
     "record_csv":"True",
     "record_csv_interval_seconds":297,
     "record_db":"True",
-    "record_db_interval_seconds":7,
+    "record_db_interval_seconds":297,
     "log_dir":"~/GreenHouseLogs"
 }

@@ -17,5 +17,20 @@ start cgi-bin
    serve helloworld + time
 write python plaintext output from database
 
+ApacheConfig:
+modified /etc/apache2/apache2.conf adding CGI ability to /var/www/html
+
+<Directory /var/www/>
+        Options Indexes FollowSymLinks ExecCGI  <added ExecCGI
+        AddHandler cgi-script .cgi              <added this line
+        AllowOverride None
+        Require all granted
+</Directory>
+
+renamed index.html within /var/www
+linked index.cgi to working directory (/pi/GreenHouseCode/WebView.py)
+now cgi script is run as index page 
+
+ 
 
 
