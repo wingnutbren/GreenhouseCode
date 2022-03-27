@@ -27,7 +27,7 @@ print("</TABLE>")
    
 #Print the Daily LOWS table
 print("<HR>")
-print("<TABLE><TR><TD>Todays Lows</TD><TD></TD></TR>")
+print("<TABLE><TR><TD>Today's Lows</TD><TD></TD></TR>")
 for therm_name in therm_list:
     query = "select min(ftemp),strftime('%%H:%%M',datetime)as time from temps where therm_name = '%s' and datetime > '%s' " % (therm_name,today)
     lowcursor = connection.cursor();
@@ -39,7 +39,7 @@ print("</TABLE>")
 
 #Print the Daily HIGHS table
 print("<HR>")
-print("<TABLE><TR><TD>Todays Highs</TD><TD></TD></TR>")
+print("<TABLE><TR><TD>Today's Highs</TD><TD></TD></TR>")
 for therm_name in therm_list:
     query = "select max(ftemp),strftime('%%H:%%M',datetime)as time from temps where therm_name = '%s' and datetime > '%s' " % (therm_name,today)
     highcursor = connection.cursor();
